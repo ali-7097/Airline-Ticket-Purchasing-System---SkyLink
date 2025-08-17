@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% block title %}Payment - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Payment Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-credit-card"></i> Payment Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <h6 class="mb-3">Card Details</h6>
+                            </div>
+                            
+                            <div class="col-12">
+                                {{ form.card_holder.label(class="form-label") }}
+                                {{ form.card_holder(class="form-control", placeholder="Name on card") }}
+                                {% for error in form.card_holder.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-12">
+                                {{ form.card_number.label(class="form-label") }}
+                                {{ form.card_number(class="form-control", placeholder="1234 5678 9012 3456") }}
+                                {% for error in form.card_number.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                {{ form.expiry_month.label(class="form-label") }}
+                                {{ form.expiry_month(class="form-select") }}
+                                {% for error in form.expiry_month.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                {{ form.expiry_year.label(class="form-label") }}
+                                {{ form.expiry_year(class="form-select") }}
+                                {% for error in form.expiry_year.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="col-md-4">
+                                {{ form.cvv.label(class="form-label") }}
+                                {{ form.cvv(class="form-control", placeholder="123") }}
+                                {% for error in form.cvv.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a> and <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a>
+                                </label>
+                                <div class="invalid-feedback">
+                                    You must agree before submitting.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            {{ form.submit(class="btn btn-primary btn-lg px-5") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Security Information -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6><i class="fas fa-shield-alt"></i> Secure Payment</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li><i class="fas fa-lock text-success"></i> 256-bit SSL encryption</li>
+                                <li><i class="fas fa-check text-success"></i> PCI DSS compliant</li>
+                                <li><i class="fas fa-check text-success"></i> Secure payment gateway</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-unstyled small">
+                                <li><i class="fas fa-check text-success"></i> No card data stored</li>
+                                <li><i class="fas fa-check text-success"></i> Instant confirmation</li>
+                                <li><i class="fas fa-check text-success"></i> 24/7 support available</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Booking Summary -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-receipt"></i> Booking Summary
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Flight Details</h6>
+                        <ul class="list-unstyled small">
+                            <li><strong>Flight:</strong> {{ session_data.flight_id }}</li>
+                            <li><strong>Passengers:</strong> {{ session_data.passenger_data|length }}</li>
+                            <li><strong>Class:</strong> {{ session_data.search_data.seat_class }}</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6>Passengers</h6>
+                        {% for passenger in session_data.passenger_data %}
+                        <div class="d-flex align-items-center mb-1">
+                            <i class="fas fa-user-circle text-primary me-2"></i>
+                            <span>{{ passenger.first_name }} {{ passenger.last_name }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Price Breakdown -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-calculator"></i> Price Breakdown
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="payment-summary">
+                        <div class="payment-row">
+                            <span>Base Price</span>
+                            <span>${{ "%.2f"|format(session_data.total_price / 1.02) }}</span>
+                        </div>
+                        <div class="payment-row">
+                            <span>Service Fee (2%)</span>
+                            <span>${{ "%.2f"|format(session_data.total_price * 0.02) }}</span>
+                        </div>
+                        <div class="payment-row payment-total">
+                            <span>Total Amount</span>
+                            <span>${{ "%.2f"|format(session_data.total_price) }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            All prices include taxes and fees. Payment is processed securely.
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Methods -->
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6><i class="fas fa-credit-card"></i> Accepted Cards</h6>
+                    <div class="d-flex gap-2 mb-2">
+                        <i class="fab fa-cc-visa fa-2x text-primary"></i>
+                        <i class="fab fa-cc-mastercard fa-2x text-warning"></i>
+                        <i class="fab fa-cc-amex fa-2x text-info"></i>
+                        <i class="fab fa-cc-discover fa-2x text-success"></i>
+                    </div>
+                    <small class="text-muted">
+                        We accept all major credit and debit cards
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Terms and Conditions</h5>
+                <button> type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Booking Terms</h6>
+                <ul>
+                    <li>All bookings are subject to airline terms and conditions</li>
+                    <li>Prices are subject to change until payment is confirmed</li>
+                    <li>Cancellation and refund policies apply as per airline terms</li>
+                    <li>Valid travel documents are required for all passengers</li>
+                    <li>Check-in requirements vary by airline and destination</li>
+                </ul>
+                
+                <h6>Payment Terms</h6>
+                <ul>
+                    <li>Payment must be completed to confirm booking</li>
+                    <li>All transactions are processed securely</li>
+                    <li>Service fees are non-refundable</li>
+                    <li>Payment confirmation will be sent via email</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Policy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Privacy Policy</h5>
+                <button> type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Data Protection</h6>
+                <ul>
+                    <li>Your personal information is protected and secure</li>
+                    <li>We do not store credit card information</li>
+                    <li>Data is used only for booking purposes</li>
+                    <li>We comply with all data protection regulations</li>
+                    <li>You can request data deletion at any time</li>
+                </ul>
+                
+                <h6>Information Usage</h6>
+                <ul>
+                    <li>Passenger details are shared with airlines for booking</li>
+                    <li>Contact information is used for booking updates</li>
+                    <li>Payment information is processed securely</li>
+                    <li>We do not sell or share personal data</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+    });
+    
+    // Card number formatting
+    const cardNumber = document.getElementById('card_number');
+    cardNumber.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+        e.target.value = formattedValue;
+    });
+    
+    // CVV formatting
+    const cvv = document.getElementById('cvv');
+    cvv.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    });
+    
+    // Real-time validation
+    const inputs = form.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (this.checkValidity()) {
+                this.classList.remove('is-invalid');
+                this.classList.add('is-valid');
+            } else {
+                this.classList.remove('is-valid');
+                this.classList.add('is-invalid');
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

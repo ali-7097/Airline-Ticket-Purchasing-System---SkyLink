@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Manage Flights - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-plane"></i> Manage Flights</h2>
+                    <p class="text-muted">View and manage all scheduled flights</p>
+                </div>
+                <a href="{{ url_for('admin.add_flight') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Flight
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flights Table -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Flight Number</th>
+                        <th>Route</th>
+                        <th>Departure</th>
+                        <th>Arrival</th>
+                        <th>Airline</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for flight in flights %}
+                    <tr>
+                        <td>
+                            <strong>{{ flight.flight_template.flight_number }}</strong>
+                        </td>
+                        <td>
+                            <div>{{ flight.flight_template.departure_airport.IATA_code }} → {{ flight.flight_template.arrival_airport.IATA_code }}</div>
+                            <small class="text-muted">{{ flight.flight_template.departure_airport.name }} to {{ flight.flight_template.arrival_airport.name }}</small>
+                        </td>
+                        <td>
+                            <div>{{ flight.departure_datetime.strftime('%B %d, %Y') }}</div>
+                            <small class="text-muted">{{ flight.departure_datetime.strftime('%I:%M %p') }}</small>
+                        </td>
+                        <td>
+                            <div>{{ flight.arrival_datetime.strftime('%B %d, %Y') }}</div>
+                            <small class="text-muted">{{ flight.arrival_datetime.strftime('%I:%M %p') }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-primary">{{ flight.flight_template.airline.name }}</span>
+                        </td>
+                        <td>
+                            {% if flight.is_active %}
+                            <span class="badge bg-success">Active</span>
+                            {% else %}
+                            <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('admin.edit_flight', flight_id=flight.flight_id) }}" 
+                                   class="btn btn-sm btn-outline-primary" title="Edit Flight">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('admin.toggle_flight', flight_id=flight.flight_id) }}" 
+                                      style="display: inline;">
+                                    <button type="submit" class="btn btn-sm btn-outline-{{ 'warning' if flight.is_active else 'success' }}" 
+                                            title="{{ 'Deactivate' if flight.is_active else 'Activate' }} Flight">
+                                        <i class="fas fa-{{ 'pause' if flight.is_active else 'play' }}"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    {% if not flights %}
+    <div class="text-center py-5">
+        <i> class="fas fa-plane-slash" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
+        <h4 class="text-muted">No flights scheduled</h4>
+        <p class="text-muted">Start by adding your first flight!</p>
+        <a href="{{ url_for('admin.add_flight') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Flight
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

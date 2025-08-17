@@ -1,0 +1,41 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Flask instance folder (if used)
+instance/
+
+# Environment variables
+*.env
+
+# Log files
+*.log
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.swp
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+
+# Migration cache (keep only migration scripts, not compiled cache)
+migrations/__pycache__/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Reports and local files not needed in GitHub
+*.pdf
+*.docx
+*.zip

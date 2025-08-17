@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+{% block title %}My Bookings - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-ticket-alt"></i> My Bookings</h2>
+                    <p class="text-muted">View and manage all your flight bookings</p>
+                </div>
+                <a href="{{ url_for('passenger.search_flights') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Book New Flight
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label for="status-filter" class="form-label">Status</label>
+                            <select class="form-select" id="status-filter">
+                                <option value="">All Status</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Cancelled">Cancelled</option>
+                                <option value="Refunded">Refunded</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="date-filter" class="form-label">Date Range</label>
+                            <select class="form-select" id="date-filter">
+                                <option value="">All Dates</option>
+                                <option value="upcoming">Upcoming</option>
+                                <option value="past">Past</option>
+                                <option value="today">Today</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="airline-filter" class="form-label">Airline</label>
+                            <select class="form-select" id="airline-filter">
+                                <option value="">All Airlines</option>
+                                <option value="Qatar Airways">Qatar Airways</option>
+                                <option value="Emirates">Emirates</option>
+                                <option value="Etihad">Etihad</option>
+                                <option value="Turkish Airlines">Turkish Airlines</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="search-filter" class="form-label">Search</label>
+                            <input type="text" class="form-control" id="search-filter" placeholder="Flight number, destination...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings List -->
+    {% if booking_details %}
+    <div class="row" id="bookings-container">
+        {% for booking in booking_details %}
+        <div class="col-lg-6 mb-4 booking-item" 
+             data-status="{{ booking.reservation.status.value }}"
+             data-airline="{{ booking.flight.flight_template.airline.name }}"
+             data-flight="{{ booking.flight.flight_template.flight_number }}"
+             data-destination="{{ booking.flight.flight_template.arrival_airport.name }}">
+            <div class="booking-card">
+                <!-- Booking Header -->
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h5 class="mb-1">{{ booking.flight.flight_template.flight_number }}</h5>
+                        <p class="text-muted mb-0">{{ booking.flight.flight_template.airline.name }}</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="booking-status status-{{ booking.reservation.status.value.lower() }}">
+                            {{ booking.reservation.status.value }}
+                        </span>
+                        <div class="mt-1">
+                            <small class="text-muted">#{{ booking.reservation.reservation_id }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flight Details -->
+                <div class="row mb-3">
+                    <div class="col-5">
+                        <div class="text-center">
+                            <div class="fw-bold">{{ booking.flight.departure_datetime.strftime('%H:%M') }}</div>
+                            <small class="text-muted">{{ booking.flight.flight_template.departure_airport.IATA_code }}</small>
+                        </div>
+                    </div>
+                    <div class="col-2 text-center">
+                        <i class="fas fa-plane text-primary"></i>
+                        <div class="small text-muted">{{ booking.flight.flight_template.duration }}</div>
+                    </div>
+                    <div class="col-5">
+                        <div class="text-center">
+                            <div class="fw-bold">{{ booking.flight.arrival_datetime.strftime('%H:%M') }}</div>
+                            <small class="text-muted">{{ booking.flight.flight_template.arrival_airport.IATA_code }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Route Information -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span class="fw-bold">{{ booking.flight.flight_template.departure_airport.name }}</span>
+                        <span class="fw-bold">{{ booking.flight.flight_template.arrival_airport.name }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted">
+                        <small>{{ booking.flight.departure_datetime.strftime('%B %d, %Y') }}</small>
+                        <small>{{ booking.flight.flight_template.flight_type.value }}</small>
+                    </div>
+                </div>
+
+                <!-- Passenger and Seat Info -->
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <small class="text-muted">Passenger</small>
+                        <div>{{ booking.passenger.first_name }} {{ booking.passenger.last_name }}</div>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">Seat</small>
+                        <div>{{ booking.seat.seat_number }} ({{ booking.seat.class_.value }})</div>
+                    </div>
+                </div>
+
+                <!-- Price and Actions -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold text-primary">${{ "%.2f"|format(booking.reservation.total_price) }}</span>
+                        <small class="text-muted d-block">{{ booking.reservation.payment_method }}</small>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('passenger.view_ticket', reservation_id=booking.reservation.reservation_id) }}" 
+                           class="btn btn-sm btn-outline-primary" title="View Ticket">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{{ url_for('passenger.download_ticket', reservation_id=booking.reservation.reservation_id) }}" 
+                           class="btn btn-sm btn-outline-success" title="Download Ticket">
+                            <i class="fas fa-download"></i>
+                        </a>
+                        <a href="{{ url_for('passenger.download_invoice', reservation_id=booking.reservation.reservation_id) }}" 
+                           class="btn btn-sm btn-outline-info" title="Download Invoice">
+                            <i class="fas fa-file-invoice"></i>
+                        </a>
+                        {% if booking.can_refund %}
+                        <button type="button" class="btn btn-sm btn-outline-warning" 
+                                onclick="confirmRefund('{{ booking.reservation.reservation_id }}')" 
+                                title="Request Refund">
+                            <i class="fas fa-undo"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Refund Information -->
+                {% if booking.reservation.status.value == 'Refunded' %}
+                <div class="mt-3 p-2 bg-warning bg-opacity-10 rounded">
+                    <small class="text-warning">
+                        <i class="fas fa-info-circle"></i> 
+                        Refund processed. 75% of the original amount has been refunded.
+                    </small>
+                </div>
+                {% elif booking.can_refund %}
+                <div class="mt-3 p-2 bg-info bg-opacity-10 rounded">
+                    <small class="text-info">
+                        <i class="fas fa-info-circle"></i> 
+                        Refund available until departure. 25% fee applies.
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- No Results Message -->
+    <div class="row" id="no-results" style="display: none;">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-search" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
+                <h4 class="text-muted">No bookings found</h4>
+                <p class="text-muted">Try adjusting your filters or book a new flight.</p>
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-plane-slash" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
+                <h4 class="text-muted">No bookings yet</h4>
+                <p class="text-muted">Start your journey by booking your first flight!</p>
+                <a href="{{ url_for('passenger.search_flights') }}" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Search Flights
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Refund Confirmation Modal -->
+<div class="modal fade" id="refundModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-warning"></i> Confirm Refund
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to request a refund for this booking?</p>
+                <div class="alert alert-warning">
+                    <strong>Important:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>A 25% cancellation fee will be deducted</li>
+                        <li>You will receive 75% of the original amount</li>
+                        <li>This action cannot be undone</li>
+                        <li>Refund processing may take 5-10 business days</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="refund-form" method="POST" style="display: inline;">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-undo"></i> Confirm Refund
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Filter functionality
+    const statusFilter = document.getElementById('status-filter');
+    const dateFilter = document.getElementById('date-filter');
+    const airlineFilter = document.getElementById('airline-filter');
+    const searchFilter = document.getElementById('search-filter');
+    
+    function filterBookings() {
+        const status = statusFilter.value.toLowerCase();
+        const date = dateFilter.value;
+        const airline = airlineFilter.value.toLowerCase();
+        const search = searchFilter.value.toLowerCase();
+        
+        const bookings = document.querySelectorAll('.booking-item');
+        let visibleCount = 0;
+        
+        bookings.forEach(booking => {
+            const bookingStatus = booking.dataset.status.toLowerCase();
+            const bookingAirline = booking.dataset.airline.toLowerCase();
+            const bookingFlight = booking.dataset.flight.toLowerCase();
+            const bookingDestination = booking.dataset.destination.toLowerCase();
+            
+            let show = true;
+            
+            // Status filter
+            if (status && bookingStatus !== status) {
+                show = false;
+            }
+            
+            // Airline filter
+            if (airline && bookingAirline !== airline) {
+                show = false;
+            }
+            
+            // Search filter
+            if (search && !bookingFlight.includes(search) && !bookingDestination.includes(search)) {
+                show = false;
+            }
+            
+            // Date filter (simplified - you can implement more complex date logic)
+            if (date) {
+                const departureDate = new Date(booking.querySelector('.text-muted small').textContent);
+                const today = new Date();
+                
+                if (date === 'upcoming' && departureDate < today) {
+                    show = false;
+                } else if (date === 'past' && departureDate >= today) {
+                    show = false;
+                } else if (date === 'today') {
+                    const isToday = departureDate.toDateString() === today.toDateString();
+                    if (!isToday) {
+                        show = false;
+                    }
+                }
+            }
+            
+            if (show) {
+                booking.style.display = 'block';
+                visibleCount++;
+            } else {
+                booking.style.display = 'none';
+            }
+        });
+        
+        // Show/hide no results message
+        const noResults = document.getElementById('no-results');
+        if (visibleCount === 0 && bookings.length > 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+    
+    // Add event listeners
+    statusFilter.addEventListener('change', filterBookings);
+    dateFilter.addEventListener('change', filterBookings);
+    airlineFilter.addEventListener('change', filterBookings);
+    searchFilter.addEventListener('input', filterBookings);
+});
+
+// Refund confirmation
+function confirmRefund(reservationId) {
+    const modal = new bootstrap.Modal(document.getElementById('refundModal'));
+    const form = document.getElementById('refund-form');
+    
+    form.action = '/passenger/refund/' + reservationId;
+    modal.show();
+}
+</script>
+{% endblock %} 

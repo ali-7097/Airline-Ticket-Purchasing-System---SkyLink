@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Manage Discounts - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2><i class="fas fa-percent"></i> Manage Discounts</h2>
+                    <p class="text-muted">Apply and manage flight discounts</p>
+                </div>
+                <a href="{{ url_for('admin.add_discount') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Apply Discount
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discounts Table -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Flight</th>
+                        <th>Route</th>
+                        <th>Discount</th>
+                        <th>Original Price</th>
+                        <th>Discounted Price</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for discount in discounts %}
+                    <tr>
+                        <td>
+                            <strong>{{ discount.flight.flight_template.flight_number }}</strong>
+                            <br>
+                            <small class="text-muted">{{ discount.flight.departure_datetime.strftime('%Y-%m-%d %H:%M') }}</small>
+                        </td>
+                        <td>
+                            <div>{{ discount.flight.flight_template.departure_airport.IATA_code }} → {{ discount.flight.flight_template.arrival_airport.IATA_code }}</div>
+                            <small class="text-muted">{{ discount.flight.flight_template.airline.name }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-success">{{ discount.discount_percentage }}%</span>
+                        </td>
+                        <td>${{ "%.2f"|format(discount.flight.flight_template.base_price) }}</td>
+                        <td>${{ "%.2f"|format(discount.flight.flight_template.base_price * (1 - discount.discount_percentage / 100)) }}</td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.delete_discount', discount_id=discount.discount_id) }}" 
+                                  style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                        onclick="return confirm('Are you sure you want to remove this discount?')">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    {% if not discounts %}
+    <div class="text-center py-5">
+        <i> class="fas fa-percent" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
+        <h4 class="text-muted">No discounts applied</h4>
+        <p class="text-muted">Apply discounts to attract more bookings!</p>
+        <a href="{{ url_for('admin.add_discount') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Apply Discount
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.table-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #555;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %} 

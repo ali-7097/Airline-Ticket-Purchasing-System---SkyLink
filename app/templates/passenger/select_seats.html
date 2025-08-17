@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+{% block title %}Select Seats - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Flight Summary -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plane"></i> Flight Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Flight Details</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>Flight:</strong> {{ flight.flight_template.flight_number }}</li>
+                                <li><strong>Airline:</strong> {{ flight.flight_template.airline.name }}</li>
+                                <li><strong>Date:</strong> {{ flight.departure_datetime.strftime('%B %d, %Y') }}</li>
+                                <li><strong>Class:</strong> {{ session_data.search_data.seat_class }}</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Route</h6>
+                            <ul class="list-unstyled">
+                                <li><strong>From:</strong> {{ flight.flight_template.departure_airport.name }} ({{ flight.flight_template.departure_airport.IATA_code }})</li>
+                                <li><strong>To:</strong> {{ flight.flight_template.arrival_airport.name }} ({{ flight.flight_template.arrival_airport.IATA_code }})</li>
+                                <li><strong>Departure:</strong> {{ flight.departure_datetime.strftime('%I:%M %p') }}</li>
+                                <li><strong>Arrival:</strong> {{ flight.arrival_datetime.strftime('%I:%M %p') }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seat Selection -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-chair"></i> Seat Selection
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if session_data.search_data.seat_class == 'Economy' %}
+                        <!-- Economy Class Seat Map -->
+                        <div class="text-center mb-4">
+                            <h6>Aircraft Layout - {{ flight.flight_template.aircraft.model }}</h6>
+                            <p class="text-muted">Select {{ session_data.passenger_data|length }} seat(s) for your passengers</p>
+                        </div>
+                        
+                        <form method="POST" id="seat-selection-form">
+                            <div class="seat-map-container">
+                                <!-- Seat Legend -->
+                                <div class="seat-legend mb-3">
+                                    <div class="d-flex justify-content-center gap-4">
+                                        <div class="d-flex align-items-center">
+                                            <div class="seat available me-2"></div>
+                                            <span>Available</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="seat selected me-2"></div>
+                                            <span>Selected</span>
+                                        </div>
+                                        <div class="d-flex align-items-center">
+                                            <div class="seat booked me-2"></div>
+                                            <span>Booked</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Seat Grid -->
+                                <div class="seat-grid">
+                                    {% for seat in available_seats %}
+                                    <div class="seat {{ seat.class_.value.lower() }} {% if seat.seat_id in booked_seat_ids %}booked{% else %}available{% endif %}" 
+                                         data-seat-id="{{ seat.seat_id }}"
+                                         data-seat-number="{{ seat.seat_number }}"
+                                         data-position="{{ seat.position.value }}">
+                                        {{ seat.seat_number }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- Hidden input for selected seats -->
+                                <input type="hidden" id="selected-seats" name="selected_seats" value="">
+                            </div>
+                            
+                            <div class="text-center mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg" id="continue-btn" disabled>
+                                    <i class="fas fa-arrow-right"></i> Continue to Payment
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <!-- Business/First Class - No Seat Selection -->
+                        <div class="text-center py-5">
+                            <i>class="fas fa-crown" style="font-size: 4rem; color: #f59e0b; margin-bottom: 20px;"></i>
+                            <h4>Premium Seat Assignment</h4>
+                            <p class="text-muted">
+                                For {{ session_data.search_data.seat_class }} class, seats will be automatically assigned 
+                                based on availability and your preferences.
+                            </p>
+                            <form method="POST">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-arrow-right"></i> Continue to Payment
+                                </button>
+                            </form>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Passenger List -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-users"></i> Passengers
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for passenger in session_data.passenger_data %}
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="avatar me-3">
+                            <i class="fas fa-user-circle fa-2x text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold">{{ passenger.first_name }} {{ passenger.last_name }}</div>
+                            <small class="text-muted">{{ passenger.age }} years old</small>
+                        </div>
+                        {% if session_data.search_data.seat_class == 'Economy' %}
+                        <div class="ms-auto">
+                            <span class="badge bg-secondary" id="seat-badge-{{ loop.index0 }}">No seat</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Price Summary -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-calculator"></i> Price Summary
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="payment-summary">
+                        <div class="payment-row">
+                            <span>Base Price ({{ session_data.passenger_data|length }} passengers)</span>
+                            <span>${{ "%.2f"|format(session_data.total_price / session_data.passenger_data|length * session_data.passenger_data|length) }}</span>
+                        </div>
+                        <div class="payment-row">
+                            <span>Service Fee (2%)</span>
+                            <span>${{ "%.2f"|format(session_data.total_price * 0.02) }}</span>
+                        </div>
+                        <div class="payment-row payment-total">
+                            <span>Total Amount</span>
+                            <span>${{ "%.2f"|format(session_data.total_price) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seat Information -->
+            {% if session_data.search_data.seat_class == 'Economy' %}
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h6><i class="fas fa-info-circle"></i> Seat Information</h6>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-check text-success"></i> Window seats offer better views</li>
+                        <li><i class="fas fa-check text-success"></i> Aisle seats provide easy access</li>
+                        <li><i class="fas fa-check text-success"></i> Middle seats are between window and aisle</li>
+                        <li><i class="fas fa-check text-success"></i> Seats are non-refundable after selection</li>
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Seat Selection Modal -->
+<div class="modal fade" id="seatModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Seat Details</h5>
+                <button> type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="seat-details">
+                    <!-- Seat details will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="select-seat-btn">Select This Seat</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const seats = document.querySelectorAll('.seat.available');
+    const selectedSeats = new Set();
+    const maxSeats = parseInt('{{ session_data.passenger_data|length }}');
+    const continueBtn = document.getElementById('continue-btn');
+    const selectedSeatsInput = document.getElementById('selected-seats');
+    
+    // Seat selection functionality
+    seats.forEach(seat => {
+        seat.addEventListener('click', function() {
+            const seatId = this.getAttribute('data-seat-id');
+            
+            if (this.classList.contains('selected')) {
+                // Deselect seat
+                this.classList.remove('selected');
+                selectedSeats.delete(seatId);
+            } else {
+                // Select seat if under limit
+                if (selectedSeats.size < maxSeats) {
+                    this.classList.add('selected');
+                    selectedSeats.add(seatId);
+                } else {
+                    showAlert('You can only select ' + maxSeats + ' seat(s)', 'warning');
+                    return;
+                }
+            }
+            
+            // Update hidden input
+            selectedSeatsInput.value = Array.from(selectedSeats).join(',');
+            
+            // Update continue button
+            if (selectedSeats.size === maxSeats) {
+                continueBtn.disabled = false;
+                continueBtn.classList.remove('btn-secondary');
+                continueBtn.classList.add('btn-primary');
+            } else {
+                continueBtn.disabled = true;
+                continueBtn.classList.remove('btn-primary');
+                continueBtn.classList.add('btn-secondary');
+            }
+            
+            // Update passenger seat badges
+            updatePassengerSeats();
+        });
+        
+        // Show seat details on hover
+        seat.addEventListener('mouseenter', function() {
+            const seatNumber = this.getAttribute('data-seat-number');
+            const position = this.getAttribute('data-position');
+            
+            this.title = `Seat ${seatNumber} - ${position}`;
+        });
+    });
+    
+    function updatePassengerSeats() {
+        const selectedSeatsArray = Array.from(selectedSeats);
+        const badges = document.querySelectorAll('[id^="seat-badge-"]');
+        
+        badges.forEach((badge, index) => {
+            if (selectedSeatsArray[index]) {
+                const seatElement = document.querySelector(`[data-seat-id="${selectedSeatsArray[index]}"]`);
+                const seatNumber = seatElement.getAttribute('data-seat-number');
+                badge.textContent = `Seat ${seatNumber}`;
+                badge.className = 'badge bg-success';
+            } else {
+                badge.textContent = 'No seat';
+                badge.className = 'badge bg-secondary';
+            }
+        });
+    }
+    
+    function showAlert(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
+});
+</script>
+{% endblock %} 

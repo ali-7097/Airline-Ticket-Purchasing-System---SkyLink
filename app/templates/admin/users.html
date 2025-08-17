@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Manage Users - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-users"></i> Manage Users</h2>
+            <p class="text-muted">View and search user accounts</p>
+        </div>
+    </div>
+
+    <!-- Search Section -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="search-container">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" name="search" class="form-control" placeholder="Search by name or email" value="{{ request.args.get('search', '') }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select> name="role" class="form-control">
+                            <option value="">All Roles</option>
+                            <option value="passenger" {{ 'selected' if request.args.get('role') == 'passenger' }}>Passenger</option>
+                            <option value="admin" {{ 'selected' if request.args.get('role') == 'admin' }}>Admin</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                    <div class="col-md-2">
+                        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-secondary w-100">
+                            <i class="fas fa-refresh"></i> Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Registration Date</th>
+                        <th>Total Bookings</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>#{{ user.user_id }}</td>
+                        <td>
+                            <strong>{{ user.name }}</strong>
+                        </td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'primary' if user.role == 'admin' else 'secondary' }}">
+                                {{ user.role|title }}
+                            </span>
+                        </td>
+                        <td>{{ user.user_id|string|truncate(10, true, '...') }}</td>
+                        <td>{{ user.reservations|length }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                    onclick="showUserDetails({{ user.user_id }})">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    {% if not users %}
+    <div class="text-center py-5">
+        <i> class="fas fa-users" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
+        <h4 class="text-muted">No users found</h4>
+        <p class="text-muted">Users will appear here once they register</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- User Details Modal -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">User Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="userDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.search-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.table-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #555;
+}
+
+.badge {
+    font-size: 0.75rem;
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+}
+
+.form-control {
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+</style>
+
+<script>
+function showUserDetails(userId) {
+    // Load user details via AJAX
+    fetch(`/admin/users/${userId}/details`)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('userDetailsContent').innerHTML = html;
+            new bootstrap.Modal(document.getElementById('userDetailsModal')).show();
+        })
+        .catch(error => {
+            console.error('Error loading user details:', error);
+            alert('Error loading user details');
+        });
+}
+</script>
+{% endblock %} 

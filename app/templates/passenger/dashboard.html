@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% block title %}Passenger Dashboard - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="dashboard-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1>Welcome back, {{ user.name }}!</h1>
+                <p>Ready for your next adventure? Search for flights and manage your bookings with ease.</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <i class="fas fa-plane-departure" style="font-size: 4rem; opacity: 0.8;"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="icon">
+                    <i class="fas fa-ticket-alt"></i>
+                </div>
+                <div class="number">{{ recent_reservations|length }}</div>
+                <div class="label">Total Bookings</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="icon">
+                    <i class="fas fa-plane"></i>
+                </div>
+                <div class="number">{{ upcoming_flights|length }}</div>
+                <div class="label">Upcoming Flights</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="number">{{ recent_reservations|selectattr('status', 'equalto', 'Confirmed')|list|length }}</div>
+                <div class="label">Active Trips</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card text-center">
+                <div class="icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="number">{{ recent_reservations|selectattr('status', 'equalto', 'Refunded')|list|length }}</div>
+                <div class="label">Refunded</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flight Search Section -->
+    <div class="search-section">
+        <h2><i class="fas fa-search"></i> Search Flights</h2>
+        <form action="{{ url_for('passenger.search_flights') }}" method="GET" class="row g-3">
+            <div class="col-md-3">
+                <label for="departure_airport" class="form-label">From</label>
+                <select class="form-select" id="departure_airport" name="departure_airport" required>
+                    <option value="">Select departure airport</option>
+                    <option value="1">New York (JFK)</option>
+                    <option value="2">Los Angeles (LAX)</option>
+                    <option value="3">Chicago (ORD)</option>
+                    <option value="4">Miami (MIA)</option>
+                    <option value="5">London (LHR)</option>
+                    <option value="6">Paris (CDG)</option>
+                    <option value="7">Tokyo (NRT)</option>
+                    <option value="8">Dubai (DXB)</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="arrival_airport" class="form-label">To</label>
+                <select class="form-select" id="arrival_airport" name="arrival_airport" required>
+                    <option value="">Select arrival airport</option>
+                    <option value="1">New York (JFK)</option>
+                    <option value="2">Los Angeles (LAX)</option>
+                    <option value="3">Chicago (ORD)</option>
+                    <option value="4">Miami (MIA)</option>
+                    <option value="5">London (LHR)</option>
+                    <option value="6">Paris (CDG)</option>
+                    <option value="7">Tokyo (NRT)</option>
+                    <option value="8">Dubai (DXB)</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="departure_date" class="form-label">Departure</label>
+                <input type="date" class="form-control" id="departure_date" name="departure_date" required>
+            </div>
+            <div class="col-md-2">
+                <label for="passengers" class="form-label">Passengers</label>
+                <select class="form-select" id="passengers" name="passengers" required>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="seat_class" class="form-label">Class</label>
+                <select class="form-select" id="seat_class" name="seat_class" required>
+                    <option value="Economy">Economy</option>
+                    <option value="Business">Business</option>
+                    <option value="First">First Class</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Search Flights
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Upcoming Flights -->
+    {% if upcoming_flights %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3><i class="fas fa-plane-departure"></i> Upcoming Flights</h3>
+            <div class="row">
+                {% for flight_info in upcoming_flights %}
+                <div class="col-md-6 mb-3">
+                    <div class="flight-card">
+                        <div class="flight-header">
+                            <span class="flight-number">{{ flight_info.flight.flight_template.flight_number }}</span>
+                            <span class="badge bg-success">Confirmed</span>
+                        </div>
+                        <div class="flight-details">
+                            <div class="flight-route">
+                                <div class="departure">{{ flight_info.flight.flight_template.departure_airport.name }}</div>
+                                <div class="time">{{ flight_info.flight.departure_datetime.strftime('%H:%M') }}</div>
+                                <div class="airport">{{ flight_info.flight.flight_template.departure_airport.IATA_code }}</div>
+                            </div>
+                            <div class="flight-duration">
+                                <i class="fas fa-plane"></i>
+                                <div>{{ flight_info.flight.flight_template.duration }}</div>
+                            </div>
+                            <div class="flight-route">
+                                <div class="arrival">{{ flight_info.flight.flight_template.arrival_airport.name }}</div>
+                                <div class="time">{{ flight_info.flight.arrival_datetime.strftime('%H:%M') }}</div>
+                                <div class="airport">{{ flight_info.flight.flight_template.arrival_airport.IATA_code }}</div>
+                            </div>
+                        </div>
+                        <div class="flight-info">
+                            <div class="airline-info">
+                                <i class="fas fa-plane"></i>
+                                <span class="airline-name">{{ flight_info.flight.flight_template.airline.name }}</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('passenger.view_ticket', reservation_id=flight_info.reservation.reservation_id) }}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-ticket-alt"></i> View Ticket
+                                </a>
+                                <a href="{{ url_for('passenger.download_ticket', reservation_id=flight_info.reservation.reservation_id) }}" 
+                                   class="btn btn-sm btn-outline-success">
+                                    <i class="fas fa-download"></i> Download
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Bookings -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3><i class="fas fa-history"></i> Recent Bookings</h3>
+                <a href="{{ url_for('passenger.view_bookings') }}" class="btn btn-outline-primary">
+                    View All Bookings
+                </a>
+            </div>
+            
+            {% if recent_reservations %}
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Flight</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in recent_reservations[:5] %}
+                        <tr>
+                            <td>
+                                <strong>#{{ reservation.reservation_id }}</strong>
+                            </td>
+                            <td>
+                                {% if reservation.reservation_seats %}
+                                {% set flight = reservation.reservation_seats[0].flight %}
+                                <div>
+                                    <strong>{{ flight.flight_template.flight_number }}</strong><br>
+                                    <small class="text-muted">
+                                        {{ flight.flight_template.departure_airport.IATA_code }} → 
+                                        {{ flight.flight_template.arrival_airport.IATA_code }}
+                                    </small>
+                                </div>
+                                {% else %}
+                                <span class="text-muted">No flight details</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ reservation.reservation_date.strftime('%b %d, %Y') }}
+                            </td>
+                            <td>
+                                {% if reservation.status.value == 'Confirmed' %}
+                                <span class="booking-status status-confirmed">Confirmed</span>
+                                {% elif reservation.status.value == 'Cancelled' %}
+                                <span class="booking-status status-cancelled">Cancelled</span>
+                                {% elif reservation.status.value == 'Refunded' %}
+                                <span class="booking-status status-refunded">Refunded</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>${{ "%.2f"|format(reservation.total_price) }}</strong>
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('passenger.view_ticket', reservation_id=reservation.reservation_id) }}" 
+                                       class="btn btn-sm btn-outline-primary" title="View Ticket">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ url_for('passenger.download_ticket', reservation_id=reservation.reservation_id) }}" 
+                                       class="btn btn-sm btn-outline-success" title="Download Ticket">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <a href="{{ url_for('passenger.download_invoice', reservation_id=reservation.reservation_id) }}" 
+                                       class="btn btn-sm btn-outline-info" title="Download Invoice">
+                                        <i class="fas fa-file-invoice"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-plane-slash" style="font-size: 4rem; color: #ccc; margin-bottom: 20px;"></i>
+                <h4 class="text-muted">No bookings yet</h4>
+                <p class="text-muted">Start your journey by searching for flights above!</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Set minimum date for departure
+    document.addEventListener('DOMContentLoaded', function() {
+        const departureDate = document.getElementById('departure_date');
+        if (departureDate) {
+            const today = new Date().toISOString().split('T')[0];
+            departureDate.setAttribute('min', today);
+        }
+    });
+</script>
+{% endblock %}

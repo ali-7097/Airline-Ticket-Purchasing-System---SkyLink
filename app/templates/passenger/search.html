@@ -1,0 +1,517 @@
+{% extends "base.html" %}
+{% block title %}Search Flights - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="search-section card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="text-center mb-0">
+                        <i class="fas fa-search"></i> Search Flights
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('passenger.search_flights') }}" id="searchForm" class="needs-validation" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="accordion" id="searchAccordion">
+                            <!-- Flight Filters Section -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="flightFiltersHeading">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#flightFiltersCollapse" aria-expanded="true" aria-controls="flightFiltersCollapse">
+                                        <i class="fas fa-plane-departure me-2"></i> Flight Filters
+                                    </button>
+                                </h2>
+                                <div id="flightFiltersCollapse" class="accordion-collapse collapse show" aria-labelledby="flightFiltersHeading">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <!-- Trip Type -->
+                                            <div class="col-12">
+                                                <label class="form-label">Trip Type</label>
+                                                <div class="d-flex justify-content-start mb-3">
+                                                    <div class="btn-group" role="group">
+                                                        <input type="radio" class="btn-check" name="trip_type" id="one_way" value="one-way" checked>
+                                                        <label class="btn btn-outline-primary" for="one_way">
+                                                            <i class="fas fa-plane"></i> One Way
+                                                        </label>
+                                                        
+                                                        <input type="radio" class="btn-check" name="trip_type" id="round_trip" value="round-trip">
+                                                        <label class="btn btn-outline-primary" for="round_trip">
+                                                            <i class="fas fa-exchange-alt"></i> Round Trip
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Departure Location -->
+                                            <div class="col-md-4">
+                                                {{ form.departure_country.label(class="form-label") }}
+                                                {{ form.departure_country(class="form-select") }}
+                                                {% for error in form.departure_country.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                {{ form.departure_city.label(class="form-label") }}
+                                                {{ form.departure_city(class="form-select", required=False) }}
+                                                {% for error in form.departure_city.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                {{ form.departure_airport.label(class="form-label") }}
+                                                {{ form.departure_airport(class="form-select") }}
+                                                {% for error in form.departure_airport.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <!-- Arrival Location -->
+                                            <div class="col-md-4">
+                                                {{ form.arrival_country.label(class="form-label") }}
+                                                {{ form.arrival_country(class="form-select") }}
+                                                {% for error in form.arrival_country.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                {{ form.arrival_city.label(class="form-label") }}
+                                                {{ form.arrival_city(class="form-select", required=False) }}
+                                                {% for error in form.arrival_city.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                {{ form.arrival_airport.label(class="form-label") }}
+                                                {{ form.arrival_airport(class="form-select") }}
+                                                {% for error in form.arrival_airport.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <!-- Dates -->
+                                            <div class="col-md-6">
+                                                {{ form.departure_date.label(class="form-label") }}
+                                                {{ form.departure_date(class="form-control", type="date") }}
+                                                {% for error in form.departure_date.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <div class="col-md-6" id="return_date_group" style="display: none;">
+                                                {{ form.return_date.label(class="form-label") }}
+                                                {{ form.return_date(class="form-control", type="date") }}
+                                                {% for error in form.return_date.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <!-- Passengers -->
+                                            <div class="col-md-6">
+                                                {{ form.passengers.label(class="form-label") }}
+                                                {{ form.passengers(class="form-control", type="number", min="1", max="9") }}
+                                                {% for error in form.passengers.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Class & Preferences Section -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="preferencesHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#preferencesCollapse" aria-expanded="false" aria-controls="preferencesCollapse">
+                                        <i class="fas fa-chair me-2"></i> Class & Preferences
+                                    </button>
+                                </h2>
+                                <div id="preferencesCollapse" class="accordion-collapse collapse" aria-labelledby="preferencesHeading">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <!-- Seat Class -->
+                                            <div class="col-md-6">
+                                                <label class="form-label">Seat Class</label>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    {% for subfield in form.seat_class %}
+                                                    <div class="form-check form-check-inline">
+                                                        {{ subfield(class="form-check-input") }}
+                                                        {{ subfield.label(class="form-check-label") }}
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                                {% for error in form.seat_class.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <!-- Seat Preference -->
+                                            <div class="col-md-6" id="seat_preference_group">
+                                                {{ form.seat_preference.label(class="form-label") }}
+                                                {{ form.seat_preference(class="form-select") }}
+                                                {% for error in form.seat_preference.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                                <small class="text-muted">Available for Economy class only</small>
+                                            </div>
+                                            
+                                            <!-- Flight Type -->
+                                            <div class="col-md-6">
+                                                <label class="form-label">Flight Type</label>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <div class="form-check form-check-inline">
+                                                        <input type="radio" class="form-check-input" name="flight_type" id="domestic" value="domestic" checked>
+                                                        <label class="form-check-label" for="domestic">Domestic</label>
+                                                    </div>
+                                                    <div class="form-check form-check-inline">
+                                                        <input type="radio" class="form-check-input" name="flight_type" id="international" value="international">
+                                                        <label class="form-check-label" for="international">International</label>
+                                                    </div>
+                                                </div>
+                                                {% for error in form.flight_type.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <!-- Preferred Airline -->
+                                            <div class="col-md-6">
+                                                {{ form.preferred_airline.label(class="form-label") }}
+                                                {{ form.preferred_airline(class="form-select") }}
+                                                {% for error in form.preferred_airline.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Time & Price Section -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="timePriceHeading">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#timePriceCollapse" aria-expanded="false" aria-controls="timePriceCollapse">
+                                        <i class="fas fa-clock me-2"></i> Time & Price
+                                    </button>
+                                </h2>
+                                <div id="timePriceCollapse" class="accordion-collapse collapse" aria-labelledby="timePriceHeading">
+                                    <div class="accordion-body">
+                                        <div class="row g-3">
+                                            <!-- Departure Time Range -->
+                                            <div class="col-md-6">
+                                                {{ form.departure_time_range.label(class="form-label") }}
+                                                {{ form.departure_time_range(class="form-select") }}
+                                                {% for error in form.departure_time_range.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <!-- Return Time Range -->
+                                            <div class="col-md-6" id="return_time_range_group" style="display: none;">
+                                                {{ form.return_time_range.label(class="form-label") }}
+                                                {{ form.return_time_range(class="form-select") }}
+                                                {% for error in form.return_time_range.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <!-- Max Budget -->
+                                            <div class="col-md-6">
+                                                {{ form.max_budget.label(class="form-label") }}
+                                                <div class="input-group">
+                                                    <span class="input-group-text">PKR</span>
+                                                    {{ form.max_budget(class="form-control") }}
+                                                </div>
+                                                {% for error in form.max_budget.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <!-- Only Discounted Flights -->
+                                            <div class="col-md-6">
+                                                <div class="form-check form-switch mt-4">
+                                                    {{ form.show_discounted_only(class="form-check-input") }}
+                                                    {{ form.show_discounted_only.label(class="form-check-label") }}
+                                                </div>
+                                                {% for error in form.show_discounted_only.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                            
+                                            <!-- Sort By -->
+                                            <div class="col-md-6">
+                                                {{ form.sort_by.label(class="form-label") }}
+                                                {{ form.sort_by(class="form-select") }}
+                                                {% for error in form.sort_by.errors %}
+                                                <div class="invalid-feedback">{{ error }}</div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="col-12 text-center mt-4">
+                            {{ form.submit(class="btn btn-primary btn-lg px-5") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Search Tips -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-lightbulb"></i> Search Tips
+                    </h5>
+                    <ul class="list-unstyled mb-0">
+                        <li><i class="fas fa-check text-success"></i> Book at least 24 hours in advance for better prices</li>
+                        <li><i class="fas fa-check text-success"></i> Mid-week flights are often cheaper</li>
+                        <li><i class="fas fa-check text-success"></i> Consider different seat classes for the best value</li>
+                        <li><i class="fas fa-check text-success"></i> Round-trip tickets may offer better rates</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date for departure
+    const departureDate = document.getElementById('departure_date');
+    const returnDate = document.getElementById('return_date');
+    const returnDateGroup = document.getElementById('return_date_group');
+    const returnTimeRangeGroup = document.getElementById('return_time_range_group');
+    const seatClassRadios = document.querySelectorAll('input[name="seat_class"]');
+    const seatPreferenceGroup = document.getElementById('seat_preference_group');
+    const departureCountryGroup = document.querySelector('.col-md-4:has(#departure_country)');
+    const arrivalCountryGroup = document.querySelector('.col-md-4:has(#arrival_country)');
+    
+    if (departureDate) {
+        const today = new Date().toISOString().split('T')[0];
+        departureDate.setAttribute('min', today);
+    }
+    
+    // Handle trip type toggle
+    const tripTypeRadios = document.querySelectorAll('input[name="trip_type"]');
+    tripTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'round-trip') {
+                returnDateGroup.style.display = 'block';
+                returnDate.setAttribute('required', 'required');
+                if (returnTimeRangeGroup) {
+                    returnTimeRangeGroup.style.display = 'block';
+                }
+            } else {
+                returnDateGroup.style.display = 'none';
+                returnDate.removeAttribute('required');
+                returnDate.value = '';
+                if (returnTimeRangeGroup) {
+                    returnTimeRangeGroup.style.display = 'none';
+                }
+            }
+        });
+    });
+    
+    // Set minimum return date based on departure date
+    departureDate.addEventListener('change', function() {
+        if (returnDate) {
+            returnDate.setAttribute('min', this.value);
+        }
+    });
+    
+    // Handle flight type toggle for country selection
+    const flightTypeRadios = document.querySelectorAll('input[name="flight_type"]');
+    flightTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'international') {
+                if (departureCountryGroup) departureCountryGroup.style.display = 'block';
+                if (arrivalCountryGroup) arrivalCountryGroup.style.display = 'block';
+            } else {
+                if (departureCountryGroup) departureCountryGroup.style.display = 'none';
+                if (arrivalCountryGroup) arrivalCountryGroup.style.display = 'none';
+            }
+        });
+    });
+    
+    // Initialize flight type visibility based on default selection
+    const selectedFlightType = document.querySelector('input[name="flight_type"]:checked');
+    if (selectedFlightType && selectedFlightType.value !== 'international') {
+        if (departureCountryGroup) departureCountryGroup.style.display = 'none';
+        if (arrivalCountryGroup) arrivalCountryGroup.style.display = 'none';
+    }
+    
+    // Handle seat class change for seat preference
+    if (seatClassRadios && seatPreferenceGroup) {
+        seatClassRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'economy') {
+                    seatPreferenceGroup.style.display = 'block';
+                } else {
+                    seatPreferenceGroup.style.display = 'none';
+                }
+            });
+        });
+        
+        // Initialize seat preference visibility based on default selection
+        const selectedSeatClass = document.querySelector('input[name="seat_class"]:checked');
+        if (selectedSeatClass && selectedSeatClass.value !== 'economy') {
+            seatPreferenceGroup.style.display = 'none';
+        } else {
+            seatPreferenceGroup.style.display = 'block';
+        }
+        
+        // Ensure seat preference is visible for economy class
+        if (!selectedSeatClass || selectedSeatClass.value === 'economy') {
+            seatPreferenceGroup.style.display = 'block';
+        }
+    }
+    
+    // Dynamic dropdowns for countries, cities, and airports
+    const departureCountry = document.getElementById('departure_country');
+    const departureCity = document.getElementById('departure_city');
+    const departureAirport = document.getElementById('departure_airport');
+    const arrivalCountry = document.getElementById('arrival_country');
+    const arrivalCity = document.getElementById('arrival_city');
+    const arrivalAirport = document.getElementById('arrival_airport');
+    
+    // Function to update cities based on selected country
+    function updateCities(countrySelect, citySelect) {
+        if (!countrySelect || !citySelect) return;
+        
+        countrySelect.addEventListener('change', function() {
+            const countryId = this.value;
+            if (!countryId) {
+                citySelect.innerHTML = '<option value="">Select City</option>';
+                return;
+            }
+            
+            // Store the currently selected city value to restore it after updating options
+            const selectedCityValue = citySelect.value;
+            
+            fetch(`/passenger/get-cities/${countryId}`)
+                .then(response => response.json())
+                .then(data => {
+                    citySelect.innerHTML = '<option value="">Select City</option>';
+                    data.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city;
+                        option.textContent = city;
+                        citySelect.appendChild(option);
+                        
+                        // If this option matches the previously selected value, select it
+                        if (city === selectedCityValue) {
+                            option.selected = true;
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching cities:', error));
+        });
+    }
+    
+    // Function to update airports based on selected city
+    function updateAirports(citySelect, airportSelect) {
+        if (!citySelect || !airportSelect) return;
+        
+        citySelect.addEventListener('change', function() {
+            const cityId = this.value;
+            if (!cityId) {
+                airportSelect.innerHTML = '<option value="">Select Airport</option>';
+                return;
+            }
+            
+            // Store the currently selected airport value to restore it after updating options
+            const selectedAirportValue = airportSelect.value;
+            
+            fetch(`/passenger/get-airports/${cityId}`)
+                .then(response => response.json())
+                .then(data => {
+                    airportSelect.innerHTML = '<option value="">Select Airport</option>';
+                    data.forEach(airport => {
+                        const option = document.createElement('option');
+                        option.value = airport.id;
+                        option.textContent = airport.name;
+                        airportSelect.appendChild(option);
+                        
+                        // If this option matches the previously selected value, select it
+                        if (airport.id.toString() === selectedAirportValue) {
+                            option.selected = true;
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching airports:', error));
+        });
+    }
+    
+    // Setup dynamic dropdowns
+    updateCities(departureCountry, departureCity);
+    updateCities(arrivalCountry, arrivalCity);
+    updateAirports(departureCity, departureAirport);
+    updateAirports(arrivalCity, arrivalAirport);
+    
+    // Handle pre-populated values from session
+    document.addEventListener('DOMContentLoaded', function() {
+        // If country is pre-selected, trigger change event to load cities
+        if (departureCountry && departureCountry.value) {
+            departureCountry.dispatchEvent(new Event('change'));
+            
+            // If city is pre-selected, wait a bit and trigger change to load airports
+            if (departureCity && departureCity.value) {
+                setTimeout(function() {
+                    departureCity.dispatchEvent(new Event('change'));
+                }, 500);
+            }
+        }
+        
+        // Same for arrival location
+        if (arrivalCountry && arrivalCountry.value) {
+            arrivalCountry.dispatchEvent(new Event('change'));
+            
+            if (arrivalCity && arrivalCity.value) {
+                setTimeout(function() {
+                    arrivalCity.dispatchEvent(new Event('change'));
+                }, 500);
+            }
+        }
+    });
+    
+    // Form validation
+    const form = document.querySelector('.needs-validation');
+    form.addEventListener('submit', function(event) {
+        // Remove required attribute from city fields to allow submission
+        const departureCityField = document.getElementById('departure_city');
+        const arrivalCityField = document.getElementById('arrival_city');
+        if (departureCityField) departureCityField.removeAttribute('required');
+        if (arrivalCityField) arrivalCityField.removeAttribute('required');
+        
+        if (!form.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            // Open accordion sections with errors
+            const accordionItems = document.querySelectorAll('.accordion-item');
+            accordionItems.forEach(item => {
+                const hasErrors = item.querySelectorAll('.is-invalid, .invalid-feedback:not(:empty)').length > 0;
+                if (hasErrors) {
+                    const collapseElement = item.querySelector('.accordion-collapse');
+                    if (collapseElement && !collapseElement.classList.contains('show')) {
+                        const button = item.querySelector('.accordion-button');
+                        if (button) button.click();
+                    }
+                }
+            });
+        }
+        form.classList.add('was-validated');
+    });
+});
+</script>
+{% endblock %}

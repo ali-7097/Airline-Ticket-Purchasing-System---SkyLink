@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Ticket - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Success Message -->
+            <div class="alert alert-success text-center mb-4">
+                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                <h4>Booking Confirmed!</h4>
+                <p class="mb-0">Your flight has been successfully booked. Your ticket and invoice are ready for
+                    download.</p>
+            </div>
+
+            <!-- Ticket Card -->
+            <div class="ticket-card">
+                <div class="ticket-header">
+                    <div class="ticket-title">FLIGHT TICKET</div>
+                    <div class="ticket-number">TKT-{{ '{:06d}'.format(reservation.reservation_id) }}</div>
+                </div>
+
+                <div class="ticket-details">
+                    <div class="ticket-info">
+                        <h5><i class="fas fa-user"></i> Passenger & Seat Information</h5>
+                        {% for flight_info in flights_info %}
+                        {% for pair in flight_info.passenger_seat_pairs %}
+                        <p><strong>Name:</strong> {{ pair.passenger.first_name }} {{ pair.passenger.last_name }}</p>
+                        <p><strong>Contact:</strong> {{ pair.passenger.contact_number }}</p>
+                        <p><strong>Seat:</strong> {{ pair.seat.seat_number }}</p>
+                        <p><strong>Class:</strong> {{ pair.seat.class_.value }}</p>
+                        <p><strong>Position:</strong> {{ pair.seat.position.value }}</p>
+                        {% if not loop.last %}
+                        <hr>
+                        {% endif %}
+                        {% endfor %}
+                        {% endfor %}
+
+                    </div>
+
+                    <div class="ticket-info">
+                        <h5><i class="fas fa-plane"></i> Flight Information</h5>
+                        <p><strong>Flight:</strong> {{ flight.flight_template.flight_number }}</p>
+                        <p><strong>Airline:</strong> {{ flight.flight_template.airline.name }}</p>
+                        <p><strong>Aircraft:</strong> {{ flight.flight_template.aircraft.model }}</p>
+                    </div>
+
+                    <div class="ticket-info">
+                        <h5><i class="fas fa-map-marker-alt"></i> Route</h5>
+                        <p><strong>From:</strong> {{ flight.flight_template.departure_airport.name }} ({{
+                            flight.flight_template.departure_airport.IATA_code }})</p>
+                        <p><strong>To:</strong> {{ flight.flight_template.arrival_airport.name }} ({{
+                            flight.flight_template.arrival_airport.IATA_code }})</p>
+                        <p><strong>Type:</strong> {{ flight.flight_template.flight_type.value }}</p>
+                    </div>
+
+                    <div class="ticket-info">
+                        <h5><i class="fas fa-clock"></i> Schedule</h5>
+                        <p><strong>Departure:</strong> {{ flight.departure_datetime.strftime('%B %d, %Y at %I:%M %p') }}
+                        </p>
+                        <p><strong>Arrival:</strong> {{ flight.arrival_datetime.strftime('%B %d, %Y at %I:%M %p') }}</p>
+                        <p><strong>Duration:</strong> {{ flight.flight_template.duration }}</p>
+                    </div>
+                </div>
+
+                <!-- Payment Details -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="ticket-info">
+                            <h5><i class="fas fa-receipt"></i> Payment Details</h5>
+                            <p><strong>Amount Paid:</strong> ${{ "%.2f"|format(reservation.total_price) }}</p>
+                            <p><strong>Payment Method:</strong> {{ reservation.payment_method }}</p>
+                            <p><strong>Status:</strong>
+                                <span class="badge bg-success">{{ reservation.status.value }}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Important Information -->
+                <div class="mt-4 p-3 bg-light rounded">
+                    <h6><i class="fas fa-exclamation-triangle"></i> Important Information</h6>
+                    <ul class="mb-0">
+                        <li>Please arrive at the airport at least 2 hours before departure for international flights
+                        </li>
+                        <li>Please arrive at the airport at least 1 hour before departure for domestic flights</li>
+                        <li>Valid government-issued photo ID is required for check-in</li>
+                        <li>This is an electronic ticket - no physical ticket is required</li>
+                        <li>Keep this ticket and your booking reference for your records</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('passenger.download_ticket', reservation_id=reservation.reservation_id) }}"
+                        class="btn btn-primary btn-lg">
+                        <i class="fas fa-download"></i> Download Ticket (PDF)
+                    </a>
+                    <a href="{{ url_for('passenger.download_invoice', reservation_id=reservation.reservation_id) }}"
+                        class="btn btn-outline-primary btn-lg">
+                        <i class="fas fa-file-invoice"></i> Download Invoice (PDF)
+                    </a>
+                </div>
+            </div>
+
+            <!-- Additional Actions -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-envelope fa-2x text-primary mb-2"></i>
+                            <h6>Email Confirmation</h6>
+                            <p class="small text-muted">A confirmation email has been sent to your registered email
+                                address.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-mobile-alt fa-2x text-primary mb-2"></i>
+                            <h6>Mobile Boarding Pass</h6>
+                            <p class="small text-muted">You can access your boarding pass on your mobile device.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-headset fa-2x text-primary mb-2"></i>
+                            <h6>24/7 Support</h6>
+                            <p class="small text-muted">Need help? Contact our support team anytime.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Next Steps -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-list-check"></i> Next Steps
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Before Your Flight</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Check your flight status 24 hours before
+                                    departure</li>
+                                <li><i class="fas fa-check text-success"></i> Complete online check-in (available 24
+                                    hours before)</li>
+                                <li><i class="fas fa-check text-success"></i> Prepare your travel documents</li>
+                                <li><i class="fas fa-check text-success"></i> Pack according to airline baggage policies
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>At the Airport</h6>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success"></i> Arrive early for security screening</li>
+                                <li><i class="fas fa-check text-success"></i> Have your ID and ticket ready</li>
+                                <li><i class="fas fa-check text-success"></i> Check the departure board for gate
+                                    information</li>
+                                <li><i class="fas fa-check text-success"></i> Follow airport and airline instructions
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="text-center mt-4">
+                <a href="{{ url_for('passenger.dashboard') }}" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-home"></i> Back to Dashboard
+                </a>
+                <a href="{{ url_for('passenger.view_bookings') }}" class="btn btn-outline-secondary me-2">
+                    <i class="fas fa-list"></i> View All Bookings
+                </a>
+                <a href="{{ url_for('passenger.search_flights') }}" class="btn btn-outline-success">
+                    <i class="fas fa-search"></i> Book Another Flight
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

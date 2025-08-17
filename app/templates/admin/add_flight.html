@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Add Flight - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-plus"></i> Add Flight</h2>
+            <p class="text-muted">Schedule a new flight from existing templates</p>
+        </div>
+    </div>
+
+    <!-- Add Flight Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="form-container">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.flight_template_id.label(class="form-label") }}
+                                {{ form.flight_template_id(class="form-control") }}
+                                {% for error in form.flight_template_id.errors %}
+                                <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.timezone_diff.label(class="form-label") }}
+                                {{ form.timezone_diff(class="form-control", placeholder="e.g., 5") }}
+                                {% for error in form.timezone_diff.errors %}
+                                <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.departure_datetime.label(class="form-label") }}
+                                {{ form.departure_datetime(class="form-control", placeholder="YYYY-MM-DD HH:MM") }}
+                                {% for error in form.departure_datetime.errors %}
+                                <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.arrival_datetime.label(class="form-label") }}
+                                {{ form.arrival_datetime(class="form-control", placeholder="YYYY-MM-DD HH:MM") }}
+                                {% for error in form.arrival_datetime.errors %}
+                                <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.manage_flights') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="info-container">
+                <h5><i class="fas fa-info-circle"></i> Flight Scheduling</h5>
+                <ul class="info-list">
+                    <li>Select a flight template to schedule</li>
+                    <li>Set departure and arrival times</li>
+                    <li>Timezone difference affects local time calculations</li>
+                    <li>Flights are automatically set as active</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-container {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 5px;
+}
+
+.info-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.info-list {
+    list-style: none;
+    padding: 0;
+}
+
+.info-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    color: #666;
+}
+
+.info-list li:last-child {
+    border-bottom: none;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    margin-right: 10px;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,55 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+.header {
+  background-color: #7b1831;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 2rem;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+}
+
+.hero {
+  padding: 2rem;
+  background-color: #ececec;
+}
+
+.search-form input, .search-form select, .search-form button {
+  margin: 0.5rem;
+  padding: 0.5rem;
+}
+
+.reservations {
+  padding: 2rem;
+}
+
+.reservation-card {
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+}
+
+.footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: #7b1831;
+  color: white;
+}

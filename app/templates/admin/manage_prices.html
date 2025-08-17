@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% block title %}Manage Prices - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-dollar-sign"></i> Manage Prices</h2>
+            <p class="text-muted">Set pricing for different seat classes</p>
+        </div>
+    </div>
+
+    <!-- Price Management Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="form-container">
+                <div class="template-info mb-4">
+                    <h5>Flight Template: {{ template.flight_number }}</h5>
+                    <p class="text-muted">{{ template.departure_airport.IATA_code }} → {{ template.arrival_airport.IATA_code }}</p>
+                </div>
+                
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.economy_price.label(class="form-label") }}
+                                {{ form.economy_price(class="form-control", placeholder="0.00") }}
+                                {% for error in form.economy_price.errors %}
+                                <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.business_price.label(class="form-label") }}
+                                {{ form.business_price(class="form-control", placeholder="0.00") }}
+                                {% for error in form.business_price.errors %}
+                                <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.first_price.label(class="form-label") }}
+                                {{ form.first_price(class="form-control", placeholder="0.00") }}
+                                {% for error in form.first_price.errors %}
+                                <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.manage_templates') }}" class="btn btn-secondary">Back to Templates</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="info-container">
+                <h5><i class="fas fa-info-circle"></i> Pricing Information</h5>
+                <div class="pricing-info">
+                    <div class="price-item">
+                        <span class="class-label">Economy</span>
+                        <span class="price-value">${{ "%.2f"|format(template.base_price) }}</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="class-label">Business</span>
+                        <span class="price-value">${{ "%.2f"|format(template.base_price * 2.5) }}</span>
+                    </div>
+                    <div class="price-item">
+                        <span class="class-label">First Class</span>
+                        <span class="price-value">${{ "%.2f"|format(template.base_price * 4.0) }}</span>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        * Prices are calculated based on the base price with multipliers:
+                        <br>• Business: 2.5x base price
+                        <br>• First Class: 4.0x base price
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-container {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.template-info {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 5px;
+}
+
+.info-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.pricing-info {
+    margin-bottom: 15px;
+}
+
+.price-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.price-item:last-child {
+    border-bottom: none;
+}
+
+.class-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.price-value {
+    font-weight: bold;
+    color: #007bff;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    margin-right: 10px;
+}
+</style>
+{% endblock %} 

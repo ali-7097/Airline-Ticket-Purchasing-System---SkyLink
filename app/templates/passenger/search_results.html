@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-5">
+    <h2 class="mb-4">Available Flights</h2>
+
+    {% if flights %}
+    {% for flight in flights %}
+    <div class="card mb-4 shadow-sm border-0">
+        <div class="card-body row align-items-center">
+
+            <!-- Departure & Arrival -->
+            <div class="col-md-4 text-center">
+                <h5 class="mb-1">{{ flight.flight_template.departure_airport.city }} ({{
+                    flight.flight_template.departure_airport.IATA_code }})</h5>
+                <small class="text-muted">{{ flight.departure_datetime.strftime('%Y-%m-%d %H:%M') }}</small>
+                <div class="my-2">✈</div>
+                <h5 class="mb-1">{{ flight.flight_template.arrival_airport.city }} ({{
+                    flight.flight_template.arrival_airport.IATA_code }})</h5>
+                <small class="text-muted">{{ flight.arrival_datetime.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
+
+            <!-- Airline & Flight Info -->
+            <div class="col-md-3 border-start border-end text-center">
+                <h6 class="fw-bold">{{ flight.flight_template.airline.name }}</h6>
+                <p class="mb-1 text-muted">Flight {{ flight.flight_template.flight_number }}</p>
+                <p class="mb-0">Duration: {{ flight.flight_template.duration }}</p>
+            </div>
+
+            <!-- Pricing -->
+            <div class="col-md-3 text-center">
+                {% set discount_percentage = flight.discounts[0].discount_percentage if flight.discounts else 0 %}
+                {% set multiplier = (100 - discount_percentage) / 100 %}
+
+                {% if discount_percentage %}
+                <span class="badge bg-success mb-2">-{{ discount_percentage }}% Off</span><br>
+                {% endif %}
+
+                <div>
+                    Economy: <strong>${{ "%.2f"|format(flight.flight_template.prices.economy_price * multiplier)
+                        }}</strong><br>
+                    Business: <strong>${{ "%.2f"|format(flight.flight_template.prices.business_price * multiplier)
+                        }}</strong><br>
+                    First: <strong>${{ "%.2f"|format(flight.flight_template.prices.first_price * multiplier) }}</strong>
+                </div>
+            </div>
+
+            <!-- Action -->
+            <div class="col-md-2 text-center">
+                <a href="{{ url_for('passenger.book_flight', flight_id=flight.flight_id) }}?search_data={{ search_data | tojson | urlencode }}"
+                    class="btn btn-primary">
+                    Book Now
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-warning">No flights found matching your search.</div>
+    {% endif %}
+</div>
+
+{% endblock %}

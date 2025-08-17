@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Apply Discount - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-percent"></i> Apply Discount</h2>
+            <p class="text-muted">Apply discounts to specific flights</p>
+        </div>
+    </div>
+
+    <!-- Apply Discount Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="form-container">
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.flight_id.label(class="form-label") }}
+                                {{ form.flight_id(class="form-control") }}
+                                {% for error in form.flight_id.errors %}
+                                <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.discount_percentage.label(class="form-label") }}
+                                {{ form.discount_percentage(class="form-control", placeholder="e.g., 15") }}
+                                {% for error in form.discount_percentage.errors %}
+                                <div class="error-message">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        {{ form.submit(class="btn btn-primary") }}
+                        <a href="{{ url_for('admin.manage_discounts') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="info-container">
+                <h5><i class="fas fa-info-circle"></i> Discount Information</h5>
+                <ul class="info-list">
+                    <li>Select a flight to apply discount</li>
+                    <li>Discount percentage (0-100%)</li>
+                    <li>Discounts are applied to base price</li>
+                    <li>Can be removed later if needed</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-container {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.form-control {
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 5px;
+}
+
+.info-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.info-list {
+    list-style: none;
+    padding: 0;
+}
+
+.info-list li {
+    padding: 8px 0;
+    border-bottom: 1px solid #eee;
+    color: #666;
+}
+
+.info-list li:last-child {
+    border-bottom: none;
+}
+
+.btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    margin-right: 10px;
+}
+</style>
+{% endblock %} 

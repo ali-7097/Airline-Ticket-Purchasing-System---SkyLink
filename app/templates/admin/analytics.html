@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% block title %}Analytics - SkyLink Airlines{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-chart-bar"></i> Analytics</h2>
+            <p class="text-muted">Detailed insights into your airline operations</p>
+        </div>
+    </div>
+
+    <!-- Revenue Analytics -->
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="chart-container">
+                <h5 class="chart-title">Revenue Overview</h5>
+                <div class="row">
+                    <div class="col-4">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ "%.2f"|format(total_revenue) }}</div>
+                            <div class="metric-label">Total Revenue</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ total_tickets }}</div>
+                            <div class="metric-label">Tickets Sold</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="metric-card">
+                            <div class="metric-value">${{ "%.2f"|format(profit) }}</div>
+                            <div class="metric-label">Profit (2% Service Fee)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="chart-container">
+                <h5 class="chart-title">Flight Statistics</h5>
+                <div class="row">
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ total_flights }}</div>
+                            <div class="metric-label">Total Flights</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="metric-card">
+                            <div class="metric-value">{{ active_flights }}</div>
+                            <div class="metric-label">Active Flights</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Revenue Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-container">
+                <h5 class="chart-title">Monthly Revenue Trend</h5>
+                <canvas id="monthlyRevenueChart" height="150"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Routes -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div class="chart-container">
+                <h5 class="chart-title">Most Popular Routes</h5>
+                {% if popular_routes %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Route</th>
+                                <th>Bookings</th>
+                                <th>Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for route in popular_routes %}
+                            <tr>
+                                <td>{{ route.departure_airport_id }} → {{ route.arrival_airport_id }}</td>
+                                <td>{{ route.booking_count }}</td>
+                                <td>${{ "%.2f"|format(route.booking_count * 100) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted text-center">No booking data available</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="chart-container">
+                <h5 class="chart-title">Quick Stats</h5>
+                <div class="stats-list">
+                    <div class="stat-item">
+                        <div class="stat-label">Average Ticket Price</div>
+                        <div class="stat-value">${{ "%.2f"|format(total_revenue / total_tickets if total_tickets > 0 else 0) }}</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Booking Rate</div>
+                        <div class="stat-value">{{ "%.1f"|format((total_tickets / total_flights * 100) if total_flights > 0 else 0) }}%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Active Rate</div>
+                        <div class="stat-value">{{ "%.1f"|format((active_flights / total_flights * 100) if total_flights > 0 else 0) }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.chart-container {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.chart-title {
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.metric-card {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 5px;
+}
+
+.metric-label {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stats-list {
+    padding: 0;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #333;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #555;
+}
+</style>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('monthlyRevenueChart').getContext('2d');
+    const monthlyRevenueData = {{ monthly_revenue|tojson }};
+    const labels = monthlyRevenueData.map(item => item.month);
+    const revenues = monthlyRevenueData.map(item => parseFloat(item.revenue.toFixed(2)));
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Monthly Revenue ($)',
+                data: revenues,
+                fill: true,
+                backgroundColor: 'rgba(0, 123, 255, 0.2)',
+                borderColor: 'rgba(0, 123, 255, 1)',
+                tension: 0.3,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value;
+                        }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return '$' + context.parsed.y;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}
